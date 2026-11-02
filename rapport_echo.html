@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Générateur de rapport ETT</title>
+
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    max-width:1400px;
+    margin:20px auto;
+    padding:20px;
+}
+
+fieldset{
+    margin-bottom:20px;
+    padding:15px;
+    border-radius:8px;
+}
+
+legend{
+    font-weight:bold;
+}
+
+.row{
+    display:flex;
+    gap:30px;
+    flex-wrap:wrap;
+}
+
+.col{
+    flex:1;
+    min-width:400px;
+}
+
+.toggle-btn{
+    padding:8px 15px;
+    border:1px solid #999;
+    border-radius:20px;
+    background:#eee;
+    margin:3px;
+    cursor:pointer;
+}
+
+.toggle-btn.active{
+    background:#0078d7;
+    color:white;
+}
+
+.toggle-btn.exclusive.active{
+    background:#28a745;
+}
+
+.action{
+    background:#0078d7;
+    color:white;
+    border:none;
+    padding:10px 15px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+textarea{
+    width:100%;
+    height:350px;
+}
+
+input[type=text]{
+    padding:5px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Rapport d'échographie</h1>
+
+<fieldset>
+<legend>Informations de base</legend>
+
+IPP 
+<input type="text" id="ipp" size="7">
+
+<br><br>
+
+Date 
+<input type="text" id="date" size="7">
+
+<button type="button" onclick="today()">
+Aujourd'hui
+</button>
+
+</fieldset>
+
+<fieldset>
+<legend>Indication</legend>
+
+<button type="button"
+class="toggle-btn"
+id="btn-ir"
+onclick="toggleButton(this)">
+Insuffisance respiratoire
+</button>
+
+<button type="button"
+class="toggle-btn"
+id="btn-choc"
+onclick="toggleButton(this)">
+État de choc
+</button>
+
+<button type="button"
+class="toggle-btn"
+id="btn-peric"
+onclick="toggleButton(this)">
+Recherche d'épanchement péricardique
+</button>
+
+</br></br>
+
+Autre <input type="text" id="indication" size="60">
+
+</fieldset>
+<fieldset>
+
+<legend>Conditions d'évaluation</legend>
+
+<div class="row">
+<div class="col">
+
+<h4>Conditions générales</h4>
+<input type="text" id="conditions" size="60">
+
+<h4>Echogénéicité</h4>
+
+<button type="button"
+class="toggle-btn exclusive active"
+id="echogeneicite_bonne"
+data-group="echogeneicite"
+onclick="toggleExclusive('echogeneicite','echogeneicite_bonne')">
+Bonne
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="echogeneicite_moyenne"
+data-group="echogeneicite"
+onclick="toggleExclusive('echogeneicite','echogeneicite_moyenne')">
+Moyenne
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="echogeneicite_mauvaise"
+data-group="echogeneicite"
+onclick="toggleExclusive('echogeneicite','echogeneicite_mauvaise')">
+Mauvaise
+</button>
+
+</div>
+
+<div class="col">
+
+<h4>Vues</h4>
+
+<button type="button"
+class="toggle-btn"
+id="plax"
+onclick="toggleButton(this)">
+Parasternal long axe
+</button>
+
+<button type="button"
+class="toggle-btn"
+id="psax"
+onclick="toggleButton(this)">
+Parasternal court axe
+</button>
+
+<button type="button"
+class="toggle-btn"
+id="a4c"
+onclick="toggleButton(this)">
+Apical 4 cavités
+</button>
+
+<button type="button"
+class="toggle-btn"
+id="a2c"
+onclick="toggleButton(this)">
+Apical 2 cavités
+</button>
+
+<button type="button"
+class="toggle-btn"
+id="a3c"
+onclick="toggleButton(this)">
+Apical 3 cavités
+</button>
+
+<button type="button"
+class="toggle-btn"
+id="sousxyph"
+onclick="toggleButton(this)">
+Sous-xyphoïdien
+</button>
+
+</div>
+</div>
+</fieldset>
+
+<!-- VG -->
+
+<fieldset>
+
+<legend>Ventricule gauche</legend>
+
+<div class="row">
+
+<div class="col">
+
+<h4>Morphologie</h4>
+
+<button type="button"
+id="vg_non_dilate"
+class="toggle-btn exclusive active"
+data-group="vg_dilat"
+onclick="toggleExclusive('vg_dilat','vg_non_dilate')">
+Non dilaté
+</button>
+
+<button type="button"
+id="vg_dilate"
+class="toggle-btn exclusive"
+data-group="vg_dilat"
+onclick="toggleExclusive('vg_dilat','vg_dilate')">
+Dilaté
+</button>
+
+<br><br>
+
+Diamètre (cm)
+<input type="text" id="vg_cm" size="3"> cm
+
+</div>
+
+<div class="col">
+
+<h4>Fonction systolique</h4>
+
+<button type="button"
+class="toggle-btn exclusive active"
+id="fevg_normale"
+data-group="fevg"
+onclick="toggleExclusive('fevg','fevg_normale')">
+Normale
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="fevg_hyper"
+data-group="fevg"
+onclick="toggleExclusive('fevg','fevg_hyper')">
+Hyperdynamique
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="fevg_leg"
+data-group="fevg"
+onclick="toggleExclusive('fevg','fevg_leg')">
+Légèrement réduite
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="fevg_mod"
+data-group="fevg"
+onclick="toggleExclusive('fevg','fevg_mod')">
+Modérément réduite
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="fevg_sev"
+data-group="fevg"
+onclick="toggleExclusive('fevg','fevg_sev')">
+Sévèrement réduite
+</button>
+
+<br><br>
+
+<h4>Fonction diastolique</h4>
+
+<button type="button"
+class="toggle-btn exclusive active"
+id="diast_normale"
+data-group="diast"
+onclick="toggleExclusive('diast','diast_normale')">
+Pas de dysfonction diastolique
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="diast_dys"
+data-group="diast"
+onclick="toggleExclusive('diast','diast_dys')">
+Dysfonction diastolique
+</button>
+</br><br/>
+
+Onde E <input type="text" id="ondeE" size="3">
+
+Onde A <input type="text" id="ondeA" size="3">
+
+E/A <input type="text" id="EA" size="3">
+
+<br><br>
+
+Temps décélération E <input type="text" id="decelerationE" size="3">
+
+E/E' <input type="text" id="EEprime" size="3">
+
+<br/><br/>
+
+<h4>Débit cardiaque</h4>
+
+CCVG (cm) <input type="text" id="ccvg" size="3">
+
+VTI CCVG <input type="text" id="vti_ccvg" size="3">
+
+VE (ml) <input type="text" id="volume_ejection" size="3">
+
+</br><br/>
+Débit cardiaque <input type="text" id="debit_cardiaque" size="3">
+
+
+<br><br>
+
+Variation respiratoire (%) <input type="text" id="variation_ao" size="3">
+
+</div>
+
+</div>
+
+</fieldset>
+
+<!-- VD -->
+
+<fieldset>
+
+<legend>Ventricule droit</legend>
+
+<div class="row">
+
+<div class="col">
+
+<h4>Morphologie</h4>
+
+<button type="button"
+id="vd_non_dilate"
+class="toggle-btn exclusive active"
+data-group="vd_dilat"
+onclick="toggleExclusive('vd_dilat','vd_non_dilate')">
+Non dilaté
+</button>
+
+<button type="button"
+id="vd_dilate"
+class="toggle-btn exclusive"
+data-group="vd_dilat"
+onclick="toggleExclusive('vd_dilat','vd_dilate')">
+Dilaté
+</button>
+
+<br><br>
+
+Diamètre (cm) :
+<input type="text" id="vd_cm" size="3">
+
+Ratio VD/VG :
+<input type="text" id="ratio" size="3">
+
+<br/><br/>
+
+<button type="button"
+class="toggle-btn"
+id="dshape"
+onclick="toggleButton(this)">
+D-shaping
+</button>
+
+<button type="button"
+class="toggle-btn"
+id="paradoxal"
+onclick="toggleButton(this)">
+Mouvement paradoxal
+</button>
+
+</div>
+
+<div class="col">
+
+<h4>Fonction systolique</h4>
+
+<button type="button"
+class="toggle-btn exclusive active"
+id="vdf_normale"
+data-group="vdf"
+onclick="toggleExclusive('vdf','vdf_normale')">
+Normale
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="vdf_leg"
+data-group="vdf"
+onclick="toggleExclusive('vdf','vdf_leg')">
+Légèrement diminuée
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="vdf_sev"
+data-group="vdf"
+onclick="toggleExclusive('vdf','vdf_sev')">
+Sévèrement diminuée
+</button>
+
+<br><br>
+
+TAPSE (cm):
+<input type="text" id="tapse" size="3">
+
+S' :
+<input type="text" id="sprime" size="3">
+
+</div>
+
+</div>
+
+</fieldset>
+
+<!-- VALVES -->
+
+<fieldset>
+
+<legend>Valves cardiaques</legend>
+
+<div class="row">
+
+<div class="col">
+
+<h4>Valve aortique</h4>
+
+<button type="button"
+class="toggle-btn exclusive active"
+id="ia_non"
+data-group="ia"
+onclick="toggleExclusive('ia','ia_non')">
+Pas d'IA identifiée
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="ia_oui"
+data-group="ia"
+onclick="toggleExclusive('ia','ia_oui')">
+IA visible
+</button>
+
+<br/><br/>
+
+Évaluation IA <input type="text" id="evaluationIA">
+</button>
+
+<br><br>
+
+
+</div>
+
+<div class="col">
+
+<h4>Valve mitrale</h4>
+
+<button type="button"
+class="toggle-btn exclusive active"
+id="im_non"
+data-group="im"
+onclick="toggleExclusive('im','im_non')">
+Pas d'IM identifiée
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="im_oui"
+data-group="im"
+onclick="toggleExclusive('im','im_oui')">
+IM visible
+</button>
+<br><br>
+Évaluation IM <input type="text" id="evaluationIM">
+
+</div>
+
+</div>
+
+<h4>Valve tricuspide</h4>
+
+<button type="button"
+class="toggle-btn exclusive active"
+id="it_non"
+data-group="it"
+onclick="toggleExclusive('it','it_non')">
+Pas d'IT identifiée
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="it_oui"
+data-group="it"
+onclick="toggleExclusive('it','it_oui')">
+IT visible
+</button>
+
+Évaluation IT
+<input type="text" id="evaluationIT">
+
+<br><br>
+
+PAPs estimée
+<input type="text" id="pressionPulmonaire">
+
+</fieldset>
+
+<!-- VCI -->
+
+<fieldset>
+
+<legend>Veine cave</legend>
+
+Diamètre VCI (cm)
+
+<input type="text" id="diametreVCI" size="3">
+
+<br><br>
+
+Variation respiratoire (%)
+
+<input type="text" id="variationVCI" size="3">
+
+</fieldset>
+<fieldset>
+
+<legend>Péricarde</legend>
+
+Épanchement péricardique
+
+<button type="button"
+class="toggle-btn exclusive active"
+id="peri_non"
+data-group="peri"
+onclick="toggleExclusive('peri','peri_non')">
+Non
+</button>
+
+<button type="button"
+class="toggle-btn exclusive"
+id="peri_oui"
+data-group="peri"
+onclick="toggleExclusive('peri','peri_oui')">
+Oui
+</button>
+
+Description épanchement
+
+<input type="text" id="descriptionPeri" size="20">
+
+</fieldset>
+
+
+<fieldset>
+<legend>Thorax</legend>
+<h4> Zones explorées</h4>
+
+<button type="button"
+id="zones_anterieures"
+class="toggle-btn"
+onclick="toggleButton(this)">
+antérieures
+</button>
+
+<button type="button"
+id="zones_laterales"
+class="toggle-btn"
+onclick="toggleButton(this)">
+latérales
+</button>
+
+<button type="button"
+id="zones_posterieures"
+class="toggle-btn"
+onclick="toggleButton(this)">
+postérieures
+</button>
+
+<div class="row">
+<div class="col">
+<h4>Gauche</h4>
+
+Glissement pleural
+
+<button type="button"
+class="toggle-btn exclusive active"
+id="glissement_pleural_present_gauche"
+data-group="glissement_pleural_gauche"
+onclick="toggleExclusive('glissement_pleural_gauche','glissement_pleural_present_gauche')">
+présent
+</button>
+<button type="button"
+class="toggle-btn exclusive"
+id="glissement_pleural_absent_gauche"
+data-group="glissement_pleural_gauche"
+onclick="toggleExclusive('glissement_pleural_gauche','glissement_pleural_absent_gauche')">
+absent
+</button>
+</br>
+
+Autres observations:
+<button type="button"
+class="toggle-btn"
+id="lung_point_gauche"
+onclick="toggleButton(this)">
+Lung point
+</button>
+
+<button type="button"
+class="toggle-btn"
+id="condensations_souspleurales_gauche"
+onclick="toggleButton(this)">
+Condensations sous-pleurales
+</button>
+
+</br>
+</br>
+
+Pattern prédominant
+<button type="button"
+class="toggle-btn exclusive active"
+id="pattern_a_gauche"
+data-group="pattern_gauche"
+onclick="toggleExclusive('pattern_gauche','pattern_a_gauche')">
+lignes A
+</button>
+<button type="button"
+class="toggle-btn exclusive"
+id="pattern_b_gauche"
+data-group="pattern_gauche"
+onclick="toggleExclusive('pattern_gauche','pattern_b_gauche')">
+lignes B
+</button>
+
+<br>
+Caractérisation des lignes B: <input type="text" id="description_pattern_gauche" size="24">
+<br><br>
+
+Consolidation
+<button type="button"
+id="consolidation_absent_gauche"
+class="toggle-btn exclusive active"data-group="consolidation_gauche"
+onclick="toggleExclusive('consolidation_gauche','consolidation_absent_gauche')">
+absente
+</button>
+<button type="button"
+id="consolidation_present_gauche"
+class="toggle-btn exclusive"data-group="consolidation_gauche"
+onclick="toggleExclusive('consolidation_gauche','consolidation_present_gauche')">
+présent
+</button>
+</br>
+Caractérisation consolidation: <input type="text" id="caracterisation_consolidation_gauche" size="24">
+</br></br>Epanchement<button type="button"id="epanchement_absent_gauche"class="toggle-btn exclusive active"data-group="epanchement_gauche"onclick="toggleExclusive('epanchement_gauche','epanchement_absent_gauche')">absent</button><button type="button"id="epanchement_present_gauche"class="toggle-btn exclusive"data-group="epanchement_gauche"onclick="toggleExclusive('epanchement_gauche','epanchement_present_gauche')">présent</button></br>Caractérisation épanchement: <input type="text" id="caracterisation_epanchement_gauche" size="24">
+</div>
+
+<div class="col">
+<h4>Droite</h4>Glissement pleural<button type="button"class="toggle-btn exclusive active"id="glissement_pleural_present_droit"data-group="glissement_pleural_droit"onclick="toggleExclusive('glissement_pleural_droit','glissement_pleural_present_droit')">présent</button><button type="button"class="toggle-btn exclusive"id="glissement_pleural_absent_droit"data-group="glissement_pleural_droit"onclick="toggleExclusive('glissement_pleural_droit','glissement_pleural_absent_droit')">absent</button></br>Autres observations:<button type="button"class="toggle-btn"id="lung_point_droit"onclick="toggleButton(this)">Lung point</button><button type="button"class="toggle-btn"id="condensations_souspleurales_droit"onclick="toggleButton(this)">Condensations sous-pleurales</button></br></br>Pattern prédominant<button type="button"class="toggle-btn exclusive active"id="pattern_a_droit"data-group="pattern_droit"onclick="toggleExclusive('pattern_droit','pattern_a_droit')">lignes A</button><button type="button"class="toggle-btn exclusive"id="pattern_b_droit"data-group="pattern_droit"onclick="toggleExclusive('pattern_droit','pattern_b_droit')">lignes B</button><br>Caractérisation des lignes B: <input type="text" id="description_pattern_droit" size="24"><br><br>Consolidation<button type="button"id="consolidation_absent_droit"class="toggle-btn exclusive active"data-group="consolidation_droit"onclick="toggleExclusive('consolidation_droit','consolidation_absent_droit')">absente</button><button type="button"id="consolidation_present_droit"class="toggle-btn exclusive"data-group="consolidation_droit"onclick="toggleExclusive('consolidation_droit','consolidation_present_droit')">présent</button></br>Caractérisation consolidation: <input type="text" id="caracterisation_consolidation_droit" size="24"></br></br>Epanchement<button type="button"id="epanchement_absent_droit"class="toggle-btn exclusive active"data-group="epanchement_droit"onclick="toggleExclusive('epanchement_droit','epanchement_absent_droit')">absent</button><button type="button"id="epanchement_present_droit"class="toggle-btn exclusive"data-group="epanchement_droit"onclick="toggleExclusive('epanchement_droit','epanchement_present_droit')">présent</button></br>Caractérisation épanchement: <input type="text" id="caracterisation_epanchement_droit" size="24">
+
+</div>
+
+</div>
+
+
+</fieldset> 
+
+
+
+
+
+
+
+
+<button class="action" onclick="generer()">
+Générer rapport
+</button>
+
+<button class="action" onclick="copier()">
+Copier
+</button>
+
+<h2>Rapport</h2>
+
+<textarea id="rapport"></textarea>
+
+<script>
+// ======================
+// UTILITAIRES
+// ======================
+
+function isActive(id) {
+    return document
+        .getElementById(id)
+        .classList.contains("active");
+}
+
+function value(id) {
+    return document
+        .getElementById(id)
+        .value
+        .trim();
+}
+
+function getSelected(group) {
+
+    const btn = document.querySelector(
+        '[data-group="' + group + '"].active'
+    );
+
+    return btn ? btn.innerText : "";
+}
+function selectedText(buttonId) {    return buttonId        ? document.getElementById(buttonId).innerText.trim()        : "";}
+// ======================
+// INTERFACE
+// ======================
+
+function toggleButton(btn) {
+    btn.classList.toggle("active");
+}
+
+function toggleExclusive(group, id) {
+
+    document
+        .querySelectorAll('[data-group="' + group + '"]')
+        .forEach(btn => btn.classList.remove("active"));
+
+    document
+        .getElementById(id)
+        .classList.add("active");
+}
+
+function today() {
+    document.getElementById("date").value =
+        new Date().toLocaleDateString("fr-CH");
+}
+
+// ======================
+// LECTURE DU FORMULAIRE
+// ======================
+
+function getFormData() {    const data = {};    // Inputs et textareas    document        .querySelectorAll("input[id], textarea[id]")        .forEach(el => {            data[el.id] = el.value.trim();        });    // Boutons exclusifs (un seul actif par groupe)    document        .querySelectorAll("[data-group]")        .forEach(btn => {            const group = btn.dataset.group;            if (!(group in data) && btn.classList.contains("active")) {                data[group] = btn.id;            }        });    // Boutons toggle simples    document        .querySelectorAll(".toggle-btn:not([data-group])")        .forEach(btn => {            if (btn.id) {                data[btn.id] = btn.classList.contains("active");            }        });    return data;}
+
+// ======================
+// GÉNÉRATION DU RAPPORT
+// ======================
+function generateHeader(data) {    let indications = [];    if (data.indication)        indications.push(data.indication);    if (data["btn-ir"])        indications.push("insuffisance respiratoire");    if (data["btn-choc"])        indications.push("état de choc");    if (data["btn-peric"])        indications.push("recherche d'épanchement péricardique");    let txt = "";    txt += `IPP : ${data.ipp || ""}\n`;    txt += `Date : ${data.date || ""}\n`;    if (indications.length)        txt += `Indication : ${indications.join(", ")}\n`;    if (data.conditions)        txt += `Conditions d'évaluation : ${data.conditions}\n`;    txt += `Échogénécité : ${selectedText(data.echogeneicite)}\n\n`;    return txt;}function generateCardiacHeader(data) {    let txt = "EXAMEN CARDIAQUE";    let vues = [];    if (data.plax) vues.push("PLAX");    if (data.psax) vues.push("PSAX");    if (data.a4c) vues.push("A4C");    if (data.a2c) vues.push("A2C");    if (data.a3c) vues.push("A3C");    if (data.sousxyph) vues.push("Sous-xyphoïdienne");    if (vues.length)        txt += ` (vues : ${vues.join(", ")})`;    txt += "\n";    return txt;}function generatePleuralHeader(data) {    let txt = "\nEXAMEN PLEURO-PULMONAIRE";    let vues = [];    if (data.zones_anterieures) vues.push("antérieures");    if (data.zones_laterales) vues.push("latérales");    if (data.zones_posterieures) vues.push("postérieures");    if (vues.length)        txt += ` (vues : ${vues.join(", ")})`;    txt += "\n";    return txt;}
+
+function generateVG(data) {    let txt = "- ";    txt += `Ventricule gauche ${        data.vg_dilat === "vg_dilate"            ? "dilaté"            : "non dilaté"    }`;    if (data.vg_cm)        txt += ` (${data.vg_cm} cm)`;    txt += ". ";    txt += `Fonction systolique ${selectedText(data.fevg).toLowerCase()}. `;    txt += `${selectedText(data.diast)}`;    let vgDiastol = [];    if (data.ondeE) vgDiastol.push(`onde E ${data.ondeE}`);    if (data.ondeA) vgDiastol.push(`onde A ${data.ondeA}`);    if (data.EA) vgDiastol.push(`E/A ${data.EA}`);    if (data.decelerationE)        vgDiastol.push(`temps de décélération E ${data.decelerationE}`);    if (data.EEprime)        vgDiastol.push(`E/E' ${data.EEprime}`);    if (vgDiastol.length)        txt += ` (${vgDiastol.join(", ")})`;    let vgDebit = [];    if (data.ccvg)        vgDebit.push(`CCVG ${data.ccvg} cm`);    if (data.vti_ccvg)        vgDebit.push(`VTI CCVG ${data.vti_ccvg}`);    if (data.volume_ejection)        vgDebit.push(`VE ${data.volume_ejection} ml`);    if (data.variation_ao)        vgDebit.push(`variation respiratoire ${data.variation_ao}%`);    if (data.debit_cardiaque || vgDebit.length) {        txt += `. Débit cardiaque`;        if (data.debit_cardiaque)            txt += ` ${data.debit_cardiaque} L/min`;        if (vgDebit.length)            txt += ` (${vgDebit.join(", ")})`;    }    txt += ".\n";    return txt;}
+
+function generateVD(data) {    let txt = "- ";    txt += `Ventricule droit ${        data.vd_dilat === "vd_dilate"            ? "dilaté"            : "non dilaté"    }`;    if (data.vd_cm)        txt += ` (${data.vd_cm} cm)`;    if (data.ratio)        txt += `, ratio VD/VG ${data.ratio}`;    txt += ". ";    if (data.dshape)        txt += "Présence d'un D-shaping. ";    if (data.paradoxal)        txt += "Mouvement paradoxal du septum. ";    txt += `Fonction systolique ${selectedText(data.vdf).toLowerCase()}`;    let evalVD = [];    if (data.tapse)        evalVD.push(`TAPSE ${data.tapse} cm`);    if (data.sprime)        evalVD.push(`S' ${data.sprime}`);    if (evalVD.length)        txt += ` (${evalVD.join(", ")})`;    txt += ".\n";    return txt;}
+
+function generateValves(data) {    let txt = "- ";    txt += data.ia === "ia_oui"        ? "Insuffisance aortique visible"        : "Pas d'insuffisance aortique identifiée";    if (data.evaluationIA)        txt += `, ${data.evaluationIA}`;    txt += "\n- ";    txt += data.im === "im_oui"        ? "Insuffisance mitrale visible"        : "Pas d'insuffisance mitrale identifiée";    if (data.evaluationIM)        txt += `, ${data.evaluationIM}`;    txt += "\n- ";    txt += data.it === "it_oui"        ? "Insuffisance tricuspide visible"        : "Pas d'insuffisance tricuspide identifiée";    if (data.evaluationIT)        txt += `, ${data.evaluationIT}`;    if (data.pressionPulmonaire)        txt += `. PAPs estimée ${data.pressionPulmonaire} mmHg`;    txt += "\n";    return txt;}
+function generateVCI(data) {    let txt = "";    const details = [];    if (data.diametreVCI)        details.push(`diamètre ${data.diametreVCI} cm`);    if (data.variationVCI)        details.push(`variation respiratoire ${data.variationVCI}%`);    if (details.length)        txt += `- Veine cave inférieure: ${details.join(", ")}\n`;    return txt;}
+
+function generatePericarde(data) {    let txt = "- ";    txt += data.peri === "peri_oui"        ? "Présence d'un épanchement péricardique"        : "Absence d'épanchement péricardique";    if (data.descriptionPeri)        txt += ` (${data.descriptionPeri})`;    txt += "\n";    return txt;}
+function generateConclusion(data) {    let txt = "\nCONCLUSION\n";    txt += data.vg_dilat === "vg_dilate"        ? "VG dilaté, "        : "VG non dilaté, ";    txt += `fonction systolique ${selectedText(data.fevg).toLowerCase()}. `;    txt += data.vd_dilat === "vd_dilate"        ? "VD dilaté, "        : "VD non dilaté, ";    txt += `fonction systolique ${selectedText(data.vdf).toLowerCase()}.`;    return txt;}
+function generatePlevres(data) {    function analyseCote(cote) {        let elements = [];        // Glissement pleural        if (            data[`glissement_pleural_${cote}`] ===            `glissement_pleural_absent_${cote}`        ) {            elements.push("glissement pleural absent");        } else {            elements.push("glissement pleural présent");        }        // Signes associés        if (data[`lung_point_${cote}`])            elements.push("lung point");        if (data[`condensations_souspleurales_${cote}`])            elements.push("condensations sous-pleurales");        // Pattern        if (            data[`pattern_${cote}`] ===            `pattern_b_${cote}`        ) {            let txt = "lignes B";            if (data[`description_pattern_${cote}`])                txt += ` (${data[`description_pattern_${cote}`]})`;            elements.push(txt);        } else {            elements.push("lignes A prédominantes");        }        // Consolidation        if (            data[`consolidation_${cote}`] ===            `consolidation_present_${cote}`        ) {            let txt = "consolidation";            if (data[`caracterisation_consolidation_${cote}`])                txt += ` (${data[`caracterisation_consolidation_${cote}`]})`;            elements.push(txt);        }        // Épanchement        if (            data[`epanchement_${cote}`] ===            `epanchement_present_${cote}`        ) {            let txt = "épanchement pleural";            if (data[`caracterisation_epanchement_${cote}`])                txt += ` (${data[`caracterisation_epanchement_${cote}`]})`;            elements.push(txt);        }        return elements.join(", ");    }    let txt = "";    let zones = [];    if (data.zones_anterieures) zones.push("antérieures");    if (data.zones_laterales) zones.push("latérales");    if (data.zones_posterieures) zones.push("postérieures");    if (zones.length)        txt += ` (vues ${zones.join(", ")} examinées)`;    txt += `- Hémithorax gauche : ${analyseCote("gauche")}\n`;    txt += `- Hémithorax droit : ${analyseCote("droit")}\n`;    return txt;}
+// ======================
+// ACTIONS
+// ======================
+
+function generer() {    const data = getFormData();    let rapport = "";    rapport += generateHeader(data);    rapport += generateCardiacHeader(data);    rapport += generateVG(data);    rapport += generateVD(data);    rapport += generateValves(data);    rapport += generateVCI(data);    rapport += generatePericarde(data);    rapport += "\n";    rapport += generatePleuralHeader(data);    rapport += generatePlevres(data);    document.getElementById("rapport").value = rapport;}
+
+function copier() {
+
+    navigator.clipboard.writeText(
+        document.getElementById("rapport").value
+    );
+
+    alert("Rapport copié");
+}
+
+</script>
+
+</body>
+</html>
